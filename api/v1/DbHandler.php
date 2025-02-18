@@ -103,20 +103,26 @@ class DbHandler {
 // ทำเอง 
 
 
-public function create_members($fname, $lname, $email, $password) { 
-
-  $stmt = $this->conn->prepare("INSERT INTO `members`(`username`, `password`, `email`, `phone`) VALUES (?, ?, ?, ?)");
-
-
-  $stmt->bind_param("ssss", $fname, $lname, $email, $password);
+public function login($username, $password) {
+  // เตรียมคำสั่ง SQL สำหรับตรวจสอบข้อมูลผู้ใช้
+  $stmt = $this->conn->prepare("SELECT `user_role` FROM `users` WHERE `username` = ? AND `password` = ?");
+  $stmt->bind_param("ss", $username, $password);
   
-  
-  if ($stmt->execute()) {
-      return true;
+  $stmt->execute();
+  $stmt->store_result();
+
+  // ตรวจสอบว่าพบผู้ใช้ในฐานข้อมูลหรือไม่
+  if ($stmt->num_rows > 0) {
+      $stmt->bind_result($user_role);
+      $stmt->fetch();
+
+      return $user_role; // ส่งค่า role กลับไป
   } else {
-      return false;
+      return false; // ไม่พบข้อมูลในฐานข้อมูล
   }
 }
+
+
 
 
   public function update_members($id, $username, $dsaprs, $email, $phone){
